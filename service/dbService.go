@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"time"
+	token "todo_api/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -25,9 +26,12 @@ type Task struct {
 	Description string             `json:"description" validate:"max=1000"`
 	Created_at  time.Time          `json:"created_at"`
 	Updated_at  time.Time          `json:"updated_at"`
+	User_id     string             `json:"user_id"`
 }
 
 func CreateTask(c *gin.Context) {
+	user_id := getUserId(c)
+
 	var task Task
 	// validate
 	if err := c.BindJSON(&task); err != nil {
@@ -41,10 +45,11 @@ func CreateTask(c *gin.Context) {
 	}
 
 	// assign value
-	task.Created_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
-	task.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	task.Created_at = time.Now()
+	task.Updated_at = time.Now()
 	task.ID = primitive.NewObjectID()
 	task.Task_id = task.ID.Hex()
+	task.User_id = user_id
 
 	// insert
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -60,16 +65,17 @@ func CreateTask(c *gin.Context) {
 }
 
 func UpdateTask(c *gin.Context) {
+	user_id := getUserId(c)
 	var task, curTask Task
 	var id string = c.Param("id")
 	if err := c.BindJSON(&task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Task is empty"})
 		return
 	}
-	task.Updated_at, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
+	task.Updated_at = time.Now()
 
 	// find task
-	filter := bson.D{{Key: "task_id", Value: id}}
+	filter := bson.D{{Key: "task_id", Value: id}, {Key: "user_id", Value: user_id}}
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	err := taskCollection.FindOne(ctx, filter).Decode(&curTask)
 	if err != nil {
@@ -99,9 +105,10 @@ func UpdateTask(c *gin.Context) {
 }
 
 func DeleteTask(c *gin.Context) {
+	user_id := getUserId(c)
 	var id string = c.Param("id")
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-	filter := bson.D{{Key: "task_id", Value: id}}
+	filter := bson.D{{Key: "task_id", Value: id}, {Key: "user_id", Value: user_id}}
 	result, err := taskCollection.DeleteOne(ctx, filter)
 	defer cancel()
 	if err != nil {
@@ -117,8 +124,9 @@ func DeleteTask(c *gin.Context) {
 }
 
 func GetTasks(c *gin.Context) {
+	user_id := getUserId(c)
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-	result, err := taskCollection.Find(ctx, bson.D{})
+	result, err := taskCollection.Find(ctx, bson.D{{Key: "user_id", Value: user_id}})
 	defer cancel()
 	if err != nil {
 		msg := "Cannot get tasks"
@@ -134,10 +142,11 @@ func GetTasks(c *gin.Context) {
 }
 
 func GetTask(c *gin.Context) {
+	user_id := getUserId(c)
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	var id string = c.Param("id")
 	var result bson.M
-	err := taskCollection.FindOne(ctx, bson.D{{Key: "task_id", Value: id}}).Decode(&result)
+	err := taskCollection.FindOne(ctx, bson.D{{Key: "task_id", Value: id}, {Key: "user_id", Value: user_id}}).Decode(&result)
 	defer cancel()
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -146,4 +155,13 @@ func GetTask(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, result)
+}
+
+func getUserId(c *gin.Context) string {
+	user_id, errs := token.ExtractTokenID(c)
+	if errs != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": errs.Error()})
+		return ""
+	}
+	return user_id
 }

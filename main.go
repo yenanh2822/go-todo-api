@@ -15,6 +15,7 @@ func main() {
 	}
 	router := gin.New()
 	router.Use(gin.Logger())
+	router.Use(gin.Recovery())
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"data": "ahihi"})
 	})
@@ -28,5 +29,9 @@ func main() {
 	router.PUT("/task/:id", database.UpdateTask)
 	// delete task endpoint
 	router.DELETE("/task/:id", database.DeleteTask)
+	// register endpoint
+	router.POST("/register", database.Register)
+	// signin endpoint
+	router.POST("/signin", database.Register)
 	router.Run(":" + port)
 }
