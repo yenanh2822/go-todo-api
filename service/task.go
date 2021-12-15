@@ -31,6 +31,9 @@ type Task struct {
 
 func CreateTask(c *gin.Context) {
 	user_id := GetUserId(c)
+	if user_id == "" {
+		return
+	}
 
 	var task Task
 	// validate
@@ -66,6 +69,9 @@ func CreateTask(c *gin.Context) {
 
 func UpdateTask(c *gin.Context) {
 	user_id := GetUserId(c)
+	if user_id == "" {
+		return
+	}
 	var task, curTask Task
 	var id string = c.Param("id")
 	if err := c.BindJSON(&task); err != nil {
@@ -106,6 +112,9 @@ func UpdateTask(c *gin.Context) {
 
 func DeleteTask(c *gin.Context) {
 	user_id := GetUserId(c)
+	if user_id == "" {
+		return
+	}
 	var id string = c.Param("id")
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	filter := bson.D{{Key: "task_id", Value: id}, {Key: "user_id", Value: user_id}}
@@ -125,6 +134,9 @@ func DeleteTask(c *gin.Context) {
 
 func GetTasks(c *gin.Context) {
 	user_id := GetUserId(c)
+	if user_id == "" {
+		return
+	}
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	result, err := taskCollection.Find(ctx, bson.D{{Key: "user_id", Value: user_id}})
 	defer cancel()
@@ -143,6 +155,9 @@ func GetTasks(c *gin.Context) {
 
 func GetTask(c *gin.Context) {
 	user_id := GetUserId(c)
+	if user_id == "" {
+		return
+	}
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 	var id string = c.Param("id")
 	var result bson.M
