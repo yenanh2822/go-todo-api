@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	middlewares "todo_api/middleware"
 	services "todo_api/service"
 
 	"github.com/gin-gonic/gin"
@@ -33,5 +34,6 @@ func main() {
 	router.POST("/register", services.Register)
 	// signin endpoint
 	router.POST("/signin", services.Login)
+	router.Group("/task").Use(middlewares.JwtAuthMiddleware())
 	router.Run(":" + port)
 }

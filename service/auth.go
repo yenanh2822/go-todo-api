@@ -36,7 +36,6 @@ func Register(c *gin.Context) {
 	}
 	user.ID = primitive.NewObjectID()
 	user.User_id = user.ID.Hex()
-	c.JSON(http.StatusOK, gin.H{"message": "validated!"})
 
 	// check exist username
 	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
@@ -77,16 +76,16 @@ func Login(c *gin.Context) {
 	err := userCollection.FindOne(ctx, bson.D{{Key: "username", Value: user.Username}}).Decode(&checkUser)
 	defer cancel()
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not registered."})
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "User not registered.", "error": err})
 		return
 	}
 	if checkUser.Password != user.Password {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect password."})
+		c.JSON(http.StatusUnauthorized, gin.H{"msg": "Incorrect password."})
 		return
 	}
 	token, err := utils.GenerateToken(checkUser.User_id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Cannot generate token.", "error": err})
 	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
