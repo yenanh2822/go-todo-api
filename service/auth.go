@@ -1,10 +1,10 @@
-package database
+package services
 
 import (
 	"context"
 	"net/http"
 	"time"
-	token "todo_api/utils"
+	utils "todo_api/utils"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -13,7 +13,7 @@ import (
 )
 
 //connect to to the database and open a user collection
-var userCollection *mongo.Collection = OpenCollection(Client, "user")
+var userCollection *mongo.Collection = utils.OpenCollection(utils.Client, "user")
 
 type User struct {
 	ID       primitive.ObjectID `bson:"_id"`
@@ -84,7 +84,9 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Incorrect password."})
 		return
 	}
-	token, err := token.GenerateToken(checkUser.User_id)
-
+	token, err := utils.GenerateToken(checkUser.User_id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	}
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }

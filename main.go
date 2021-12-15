@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
-	database "todo_api/service"
+	services "todo_api/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,18 +20,18 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"data": "ahihi"})
 	})
 	// get all tasks endpoint
-	router.GET("/task/:id", database.GetTask)
+	router.GET("/task/:id", services.GetTask)
 	// get task by id endpoint
-	router.GET("/task", database.GetTasks)
+	router.GET("/task", services.GetTasks)
 	// create task endpoint
-	router.POST("/task", database.CreateTask)
+	router.POST("/task", services.CreateTask)
 	// update task endpoint
-	router.PUT("/task/:id", database.UpdateTask)
+	router.PUT("/task/:id", services.UpdateTask)
 	// delete task endpoint
-	router.DELETE("/task/:id", database.DeleteTask)
+	router.DELETE("/task/:id", services.DeleteTask)
 	// register endpoint
-	router.POST("/register", database.Register)
+	router.POST("/register", services.Register)
 	// signin endpoint
-	router.POST("/signin", database.Register)
+	router.POST("/signin", services.Login)
 	router.Run(":" + port)
 }
