@@ -8,6 +8,21 @@
 		{
 			"name": "Create task",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "POST",
 				"header": [],
 				"body": {
@@ -35,17 +50,32 @@
 		{
 			"name": "Get task by id",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/task/61940932128aeabc0f529619",
+					"raw": "localhost:5000/task/61b9e32ca69ac52bdc805049",
 					"host": [
 						"localhost"
 					],
 					"port": "5000",
 					"path": [
 						"task",
-						"61940932128aeabc0f529619"
+						"61b9e32ca69ac52bdc805049"
 					]
 				}
 			},
@@ -57,6 +87,21 @@
 				"disableBodyPruning": true
 			},
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "GET",
 				"header": [],
 				"body": {
@@ -84,11 +129,26 @@
 		{
 			"name": "Update task",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "password",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"name\": \"haha\",\r\n    \"description\": \"updated description\"\r\n}",
+					"raw": "{\r\n    \"name\": \"huhu\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -96,14 +156,14 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/task/61941ef9192ccda4368302a5",
+					"raw": "localhost:5000/task/61b9e7d0609ba4e6df3c536e",
 					"host": [
 						"localhost"
 					],
 					"port": "5000",
 					"path": [
 						"task",
-						"61941ef9192ccda4368302a5"
+						"61b9e7d0609ba4e6df3c536e"
 					]
 				}
 			},
@@ -112,6 +172,21 @@
 		{
 			"name": "Delete task",
 			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "password",
+							"value": "{{token}}",
+							"type": "string"
+						},
+						{
+							"key": "token",
+							"value": "{{token}}",
+							"type": "string"
+						}
+					]
+				},
 				"method": "DELETE",
 				"header": [],
 				"body": {
@@ -136,6 +211,66 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Signin",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Username\": \"user3\",\r\n    \"Password\": \"pass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/signin",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"Username\": \"user2\",\r\n    \"Password\": \"pass\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5000/register",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"register"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE2Mzk1NzUwMjEsInVzZXJfaWQiOiI2MWI5ZGZkMWZlOWI1NzhjMTY2Mjk5MjMifQ.JC1Acl-V4k0DbOtfjQWKJ1Cd_A4RBrkmZ8zDHYIESS0"
 		}
 	]
 }
