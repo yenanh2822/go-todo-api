@@ -1,91 +1,58 @@
-package services
+package service
 
 import (
-	"context"
-	"net/http"
-	"time"
+	"fmt"
+	"todo_api/domain/users"
 	utils "todo_api/utils"
 
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 //connect to to the database and open a user collection
-var userCollection *mongo.Collection = utils.OpenCollection(utils.Client, "user")
+var (
+	UsersService usersServiceInterface = &usersService{}
+)
 
-type User struct {
-	ID       primitive.ObjectID `bson:"_id"`
-	User_id  string             `json:"User_id"`
-	Username string             `json:"username" binding:"required"`
-	Password string             `json:"password" binding:"required"`
+type usersService struct{}
+
+type usersServiceInterface interface {
+	Register(users.User) *users.User
+	Login(users.User) string
 }
 
-func Register(c *gin.Context) {
-	var user User
+func (s *usersService) Register(user users.User) *users.User {
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
 	validationErr := validate.Struct(user)
 	if validationErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
-		return
+		fmt.Println(validationErr)
+		// c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
+
+		// tupt4: should return err
+		return nil
 	}
 	user.ID = primitive.NewObjectID()
 	user.User_id = user.ID.Hex()
 
-	// check exist username
-	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-	count, err := userCollection.CountDocuments(ctx, bson.D{{Key: "username", Value: user.Username}})
-	if count != 0 {
-		msg := "This user already exists"
-		c.JSON(http.StatusConflict, gin.H{"msg": msg, "error": err})
-		defer cancel()
-		return
-	}
+	user.Register()
 
-	// insert
-	result, err := userCollection.InsertOne(ctx, user)
-	defer cancel()
-	if err != nil {
-		msg := "User was not registered"
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "error": err})
-		return
-	}
-
-	c.JSON(http.StatusOK, result)
+	return &user
 }
 
-func Login(c *gin.Context) {
-	var user User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+func (s *usersService) Login(user users.User) string {
+
 	validationErr := validate.Struct(user)
 	if validationErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": validationErr.Error()})
-		return
+		fmt.Println(validationErr)
+
+		// tupt4: should return err
+		return "error"
 	}
 
-	var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-	var checkUser User
-	err := userCollection.FindOne(ctx, bson.D{{Key: "username", Value: user.Username}}).Decode(&checkUser)
-	defer cancel()
+	user.Login()
+
+	token, err := utils.GenerateToken(user.User_id)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"msg": "User not registered.", "error": err})
-		return
+		fmt.Println(err.Error())
 	}
-	if checkUser.Password != user.Password {
-		c.JSON(http.StatusUnauthorized, gin.H{"msg": "Incorrect password."})
-		return
-	}
-	token, err := utils.GenerateToken(checkUser.User_id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"msg": "Cannot generate token.", "error": err})
-	}
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	return token
 }
